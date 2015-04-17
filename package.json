@@ -2,6 +2,7 @@
   "name": "DFA-Analyzer",
   "version": "1.0.0",
   "dependencies": {
+    "prettyjson": "^1.1.0",
     "prompt": "^0.2.14"
   }
 }
