@@ -1,0 +1,7 @@
+{
+  "name": "DFA-Analyzer",
+  "version": "1.0.0",
+  "dependencies": {
+    "prompt": "^0.2.14"
+  }
+}
