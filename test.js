@@ -1,5 +1,6 @@
 var fs = require('fs');
 var util = require('util');
+var array = require('lodash/array');
 var prompt = require('prompt');
 var prettyjson = require('prettyjson');
 var obj,
