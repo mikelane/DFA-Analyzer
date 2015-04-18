@@ -74,4 +74,4 @@ prompt.get({properties: {name: {description: "Filename of DFA"}}}, function (err
     process.stdout.write('=======================================\n');
 
   });
-})
+});
