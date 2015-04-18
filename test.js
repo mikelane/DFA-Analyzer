@@ -3,7 +3,8 @@ var util = require('util');
 var prompt = require('prompt');
 var prettyjson = require('prettyjson');
 var obj,
-    currentState;
+    currentState = undefined,
+    currentString = undefined;
 
 prompt.message = "test";
 prompt.delimiter = ":";
@@ -71,7 +72,13 @@ prompt.get({properties: {name: {description: "Filename of DFA"}}}, function (err
       process.stdout.write('\n');
     }
 
-    process.stdout.write('=======================================\n');
+    process.stdout.write('=======================================\n\n');
 
+    //Once we have the object loaded into memory, we need to set the current state to the starting state
+    currentState = obj.q0;
+
+    prompt.get({properties: {str: {description: "String to check"}}}, function(err, input) {
+      console.log("\nChecking string " + input.str);
+    });
   });
 });
