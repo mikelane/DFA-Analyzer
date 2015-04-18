@@ -1,6 +1,13 @@
 {
   "name": "DFA-Analyzer",
   "version": "1.0.0",
+  "description": "Use DFA to analyze a string",
+  "keywords": ["DFA", "Homework", "String", "Analysis"],
+  "repository": 
+    {
+      "type": "git",
+      "url": "https://github.com/mikelane/DFA-Analyzer.git"
+    },
   "dependencies": {
     "prettyjson": "^1.1.0",
     "prompt": "^0.2.14"
