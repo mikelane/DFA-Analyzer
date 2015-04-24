@@ -15,6 +15,6 @@
   "dependencies": {
     "lodash": "^3.7.0",
     "prettyjson": "^1.1.0",
-    "prompt": "^0.2.14"
+    "prompt-sync": "^1.0.0"
   }
 }

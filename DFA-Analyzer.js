@@ -1,59 +1,92 @@
-var fs = require('fs');
-var util = require('util');
-var array = require('lodash/array');
-var prompt = require('prompt');
-var prettyjson = require('prettyjson');
-var obj,
+/**
+ * Michael Lane, CS311, Project 1, 24 Apr 2015
+ * DFA Analyzer v1.0
+ *
+ * This program first prompts the user for a filename which should be something like:
+ *
+ * Machines/machine4.json
+ *
+ * (A few machines are stored in the Machines subfolder. However, feel free to input a full directory structure for the
+ * machine if you want.)
+ *
+ * Then the user is prompted to enter a string which will be run through the associated machine to test for acceptance.
+ * The user can simply hit <enter> if they want to test the empty string. Strings with characters not in the language
+ * specified by the JSON file will always be rejected.
+ *
+ */
+
+//Included modules.
+var fs = require('fs');                   //For reading in from a file
+var prompt = require('prompt-sync');      //for sync reading in from stdin
+var array = require('lodash/array');      //for determining if and where a string is in an array
+var prettyjson = require('prettyjson');   //for outputting nicely formatted json
+
+//variables in use in the function
+var verbose,
+    again = false,
+    errorState = false,
+    obj,
     currentState = undefined,
-    verbose;
+    str;
 
 //Detect if verbose flag (-v or --verbose) was passed into the command line. If so, set verbose flag to true
 if(array.findIndex(process.argv, function(chr) {return (chr == "-v" || chr == "--verbose")}) >= 2) {
   verbose = true;
 }
 
-//Set the options for the prompt module
-prompt.message = "DFA Analyzer";
-prompt.delimiter = ":";
-prompt.start();
-
 //Options for the prettyjson
 var options = {
   inlineArrays: true
 };
 
-//get input from the user and when done call a function on the response
-prompt.get({properties: {name: {description: "Filename of DFA"}}}, function (err, response) {
-  //Throw an error if prompt detects one.
-  if(err) throw err;
+do {
+  console.log('\n');
+  errorState = false;
+  again = false;
 
-  //Output verbose mode message
+  //Gather input from the user
+  process.stdout.write('Enter filename of the machine: ');
+  var fileName = prompt();
+
   if(verbose)
-    console.log('\nParsing DFA in file ' + response.name + '\n');
+    console.log('\nFetching DFA in file %s', fileName);
 
-  //Call the readFile function and call a function on the loaded data
-  fs.readFile(response.name, function(err, data) {
-    //Error thrown if the file doesn't exist. This ought to be handled better.
-    if(err) throw err;
+  //Try reading the file that the user specified. Fail gracefully by setting the errorState flag and alerting the user
+  try {
+    obj = fs.readFileSync(fileName, 'utf8');
+  } catch(e) {
+    errorState = true;
+    console.error("That file doesn't exist!");
+  }
 
-    //Parse the JSON data into an object
-    obj = JSON.parse(data);
-    //Set currentState to the start state.
-    currentState = obj.q0;
+  //Try parsing the JSON file using Node's built in JSON parser. Fail gracefully.
+  if(!errorState) {
+    try {
+      obj = JSON.parse(obj);
+    } catch(e) {
+      errorState = true;
+      console.error("Malformed JSON file.");
+    }
+  }
 
-    //Output a pretty version of the JSON file...
+  //If we've read the file and parsed it correctly, then go about the rest of our business.
+  if(!errorState) {
+
+    //Verbose printing of the DFA in JSON format and in a human-readable format
     if(verbose) {
-      console.log('The JSON object is as follows:');
+      console.log('The JSON object is as follows:\n');
       console.log(prettyjson.render(obj, options) + '\n\n');
 
       //Output a human-readable DFA
       process.stdout.write('The DFA is as follows\n');
       process.stdout.write('=======================================\n');
       process.stdout.write(' Q: {');
+
       for(var i=0; i < obj.Q.length; ++i) {
         process.stdout.write(obj.Q[i]);
         if(i < obj.Q.length - 1) process.stdout.write(", ");
       }
+
       process.stdout.write('}\n');
 
       process.stdout.write(' Σ: {');
@@ -61,6 +94,7 @@ prompt.get({properties: {name: {description: "Filename of DFA"}}}, function (err
         process.stdout.write(obj.Σ[i]);
         if(i < obj.Σ.length - 1) process.stdout.write(", ");
       }
+
       process.stdout.write('}\n');
 
       process.stdout.write('q0: ' + obj.q0 + '\n');
@@ -90,29 +124,36 @@ prompt.get({properties: {name: {description: "Filename of DFA"}}}, function (err
       }
 
       process.stdout.write('=======================================\n\n');
+
+      console.log("Start state: %s", currentState);
+
     } //End of the verbose output
 
-    //Verbose output of start state.
-    if(verbose)
-      console.log("Start state: " + currentState);
+    //Time to get the string from the user
+    do {
+      console.log('\n');
+      currentState = obj.q0;
+      again = false;
 
-    //Prompt the user to input a string to analyze
-    prompt.get({properties: {str: {description: "String to check"}}}, function(err, input) {
-      if(err) throw err;
+      //Gather the string. Simply hitting <enter> sets string to "". That is the empty string.
+      process.stdout.write("Enter string to analyze: ");
+      str = prompt();
 
-      //Verbose output
-      if(verbose)
-        console.log("\nChecking string " + input.str);
+      if(verbose) {
+        process.stdout.write("\nString to check: " + str);
+        if(str.length == 0) process.stdout.write('ε');
+        process.stdout.write('\n');
+      }
 
-      //Define variables used in analyzing the string.
+      //initialize a few variables.
       var c = undefined,
-        col = 0,
-        row = 0;
+          col = 0,
+          row = 0;
 
       //Walk through each element of the string and update currentState as required.
-      for(var i=0; i < input.str.length && row >= 0 && col >= 0; ++i) {
+      for(var i=0; i < str.length && row >= 0 && col >= 0; ++i) {
         //Set c to the current character under consideration
-        c = input.str.charAt(i);
+        c = str.charAt(i);
 
         //verbose output of current character and state
         if(verbose) {
@@ -159,13 +200,13 @@ prompt.get({properties: {name: {description: "Filename of DFA"}}}, function (err
 
       //Now, if the user simply hit enter when they were asked to input a string, that will represent the empty string.
       //So set that string to 'ε' for beauty's sake.
-      if(input.str.length == 0)
-        input.str = 'ε';
+      if(str.length == 0)
+        str = 'ε';
 
       //If the current state is UNDEFINED ROW, inform the user that the string was not accepted because it contained
       //characters not located in Σ
       if(currentState == "UNDEFINED ROW")
-        console.log(input.str + ": Not accepted. String contains characters that are not in Σ.");
+        console.log(str + ": Not accepted. String contains characters that are not in Σ.");
 
       //if the current state is UNDEFINED COL, inform the user that the DFA is invalid
       else if(currentState == "UNDEFINED COL")
@@ -173,11 +214,29 @@ prompt.get({properties: {name: {description: "Filename of DFA"}}}, function (err
 
       //Use lodash findIndex to determine if the currentState is an element of F (returns index if so and -1 otherwise)
       else if(array.findIndex(obj.F, function(chr) {return chr == currentState}) >= 0)
-        console.log(input.str + ": Accepted.");
+        console.log(str + ": Accepted.");
 
       //Otherwise, the string was not accepted.
       else
-        console.log(input.str + ": Not accepted.");
-    });
-  });
-});
+        console.log(str + ": Not accepted.");
+
+
+      if(!again) {
+        process.stdout.write('Try another string? (y/n): ');
+        var response = prompt();
+        again = (response == 'y' || response == 'Y');
+      }
+    } while(again);
+  }
+
+
+  if(!again) {
+    if(errorState)
+      process.stdout.write("Try again? (y/n): ");
+    else
+      process.stdout.write('Try another machine? (y/n): ');
+    var response = prompt();
+    again = (response == 'y' || response == 'Y');
+  }
+
+} while(again);
