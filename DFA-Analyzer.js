@@ -72,6 +72,8 @@ do {
   //If we've read the file and parsed it correctly, then go about the rest of our business.
   if(!errorState) {
 
+    console.log("Machine details: %s", obj.comment);
+
     //Verbose printing of the DFA in JSON format and in a human-readable format
     if(verbose) {
       console.log('The JSON object is as follows:\n');

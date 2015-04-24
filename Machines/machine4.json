@@ -1,4 +1,5 @@
 {
+  "comment": "Accepts empty, ab, aabb, aaabbb",
   "Q": ["q0", "q1", "q2", "q3", "q4", "q5", "q6", "F"],
   "Σ": ["a", "b", "c"],
   "q0": "q0",
