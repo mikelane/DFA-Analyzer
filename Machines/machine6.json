@@ -1,0 +1,11 @@
+{
+  "comment": "It WOULD accept any multiple 7 in base 3 if it had 'q0' as an accepting state",
+  "Q": ["q0", "q1", "q2", "q3", "q4", "q5", "q6"],
+  "Σ": ["0", "1", "2"],
+  "q0": "q0",
+  "δ": [["q0", "q3", "q6", "q2", "q5", "q1", "q4"],
+        ["q1", "q4", "q0", "q3", "q6", "q2", "q5"],
+        ["q2", "q5", "q1", "q4", "q0", "q3", "q6"]],
+  "F": []
+}
+
